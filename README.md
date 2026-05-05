@@ -1,4 +1,4 @@
-# PartSAM on AMD ROCm — first public port
+# PartSAM on AMD ROCm
 
 > **Run [PartSAM](https://github.com/czvvd/PartSAM) (ICLR 2026, `arXiv:2509.21965`) — promptable 3D part segmentation — on consumer AMD GPUs (RDNA3 / RDNA4) with ROCm 7.x.**
 >
