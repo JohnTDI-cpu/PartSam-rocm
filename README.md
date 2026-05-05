@@ -73,8 +73,7 @@ If you've reproduced this on different hardware, please open a PR adding to this
 
 ## Why this exists
 
-> The recon search for any prior ROCm port of these tools came up empty. Of the four CUDA-only 3D part-segmentation models surveyed (`SAMPart3D`, `HoloPart`, `MagicArticulate`, `PartSAM`), **none had public AMD/ROCm forks**, no working HuggingFace AMD Spaces, no ROCm/composable_kernel roadmap mention, no Reddit/blog tutorials. Researchers publish CUDA, move on, and the AMD ML community is too small to maintain forks. This is the first public PartSAM-on-ROCm.
-
+> The recon search for any prior ROCm port of these tools came up empty. Of the four CUDA-only 3D part-segmentation models surveyed (`SAMPart3D`, `HoloPart`, `MagicArticulate`, `PartSAM`), **none had public AMD/ROCm forks**, no working HuggingFace AMD Spaces, no ROCm/composable_kernel roadmap mention, no Reddit/blog tutorials. Researchers publish CUDA, move on, and the AMD ML community is too small to maintain forks.
 The blockers were:
 
 | Layer | Default | Why it fails on ROCm | Fix in this recipe |
