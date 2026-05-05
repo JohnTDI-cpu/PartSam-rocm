@@ -27,6 +27,8 @@ The `.ply` output (`results/abrams_trellis.ply`, 22 MB) opens in MeshLab, Blende
 
 Two paths — pick whichever fits your machine. **Both are persistent on disk and on-demand to run** (nothing auto-mounts on boot, nothing left running after).
 
+> **Filesystem note:** the build cache (`/tmp` for native venv, Docker layer for image) **must be on a POSIX filesystem (ext4 / xfs / btrfs / zfs)**. Apex's `apex/contrib/csrc` uses relative symlinks; exFAT/FAT32/some NTFS-via-fuse mounts can't store them and the build will crash with `NotADirectoryError`. The installer auto-detects this and falls back to `~/.partsam_apex_build/` when needed, but if you have `BUILD_DIR=` pointed at a non-POSIX mount, override with `BUILD_DIR=/path/on/ext4 ./scripts/install.sh`.
+
 ### Path A — Docker (recommended, isolated, reproducible)
 
 ```bash
@@ -75,8 +77,9 @@ USE_GRAPH_CUT=True ./run_rocm.sh
 | GPU | Architecture | VRAM | ROCm | PyTorch | Status |
 |---|---|---|---|---|---|
 | **AMD Radeon AI PRO R9700** | gfx1201 (RDNA4) | 32 GB | 7.2.26015 | 2.11.0+rocm7.2 | ✅ verified — 8/8 meshes, 60 s/mesh |
+| **RX 7900 XTX** | gfx1100 (RDNA3) | 24 GB | 7.x | 2.11+rocm7.2 | ✅ verified by external user — install.sh runs clean after the SIGPIPE + exFAT-symlink fixes |
 | RX 9070 / 9070 XT | gfx1201 (RDNA4) | 16 GB | 7.x | 2.11+rocm7.2 | should work — same arch (use `BATCH=4 NUM_POINTS=10000`) |
-| RX 7900 XTX / 7900 XT | gfx1100 (RDNA3) | 24 GB | 7.x | 2.11+rocm7.2 | should work — same code path, same patches |
+| RX 7900 XT | gfx1100 (RDNA3) | 20 GB | 7.x | 2.11+rocm7.2 | should work — same code path |
 | RX 7800 XT / 7700 XT | gfx1101 (RDNA3) | 16 GB | 7.x | 2.11+rocm7.2 | should work — reduce batch on smaller VRAM |
 | RX 7600 | gfx1102 (RDNA3) | 8 GB | 7.x | 2.11+rocm7.2 | tight on VRAM — use smallest meshes, `NUM_POINTS=5000` |
 

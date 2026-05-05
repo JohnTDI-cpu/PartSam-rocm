@@ -21,7 +21,10 @@ echo "build cache: $BUILD_DIR"
 
 # 1. Verify ROCm + Python
 command -v rocminfo >/dev/null || { echo "ERROR: rocminfo not found. Install ROCm 7.x first."; exit 1; }
-GFX=$(rocminfo 2>/dev/null | grep -m1 'Name:.*gfx' | awk '{print $2}')
+# NOTE: split pipeline — `rocminfo | grep -m1` triggers SIGPIPE under `set -euo pipefail`
+# (grep closes stdin after first match → rocminfo dies → pipefail aborts script with exit 141).
+ROCMINFO_OUT=$(rocminfo 2>/dev/null || true)
+GFX=$(echo "$ROCMINFO_OUT" | grep -m1 'Name:.*gfx' | awk '{print $2}')
 echo "GPU: $GFX"
 case "$GFX" in
   gfx1100|gfx1101|gfx1102|gfx1200|gfx1201) echo "OK — RDNA3/RDNA4 supported" ;;
@@ -36,7 +39,9 @@ if [ ! -d "$VENV" ]; then
 fi
 PIP="$VENV/bin/pip"
 PY="$VENV/bin/python"
-$PIP install -q --upgrade pip wheel setuptools
+# Pin setuptools <82 — torch 2.11+rocm7.2 wheels are pinned to setuptools<82,
+# newer versions trigger an installer warning and can break editable extension builds.
+$PIP install -q --upgrade pip wheel "setuptools<82"
 echo "[2/7] Installing torch + torchvision (ROCm 7.2)..."
 $PIP install -q torch torchvision --index-url https://download.pytorch.org/whl/rocm7.2
 $PY -c "import torch; assert torch.cuda.is_available(), 'no GPU'; print('  torch ' + torch.__version__ + ' on ' + torch.cuda.get_device_name(0))"
@@ -74,8 +79,20 @@ if ! $PY -c "import torkit3d" 2>/dev/null; then
 fi
 
 if ! $PY -c "import apex" 2>/dev/null; then
-  [ -d apex ] || git clone --depth 1 https://github.com/ROCm/apex.git
-  (cd apex && $PIP install -v --disable-pip-version-check --no-cache-dir \
+  # ROCm/apex repo uses relative symlinks under apex/contrib/csrc.
+  # exFAT/FAT32/some NTFS-via-fuse mounts cannot store POSIX symlinks — git stores them as
+  # plain text files containing the target path, which apex's hipify_extension walks into
+  # as a directory and crashes with `NotADirectoryError`. Probe and fall back to ext4 HOME.
+  APEX_BUILD_DIR="$BUILD_DIR/apex"
+  if ! ln -sf "$BUILD_DIR" "$BUILD_DIR/.symlink_test" 2>/dev/null || [ ! -L "$BUILD_DIR/.symlink_test" ]; then
+    echo "  WARN: $BUILD_DIR cannot store POSIX symlinks (likely exFAT/FAT32/non-posix FS)."
+    echo "  WARN: cloning apex into ~/.partsam_apex_build instead (ext4/xfs assumed)."
+    APEX_BUILD_DIR="$HOME/.partsam_apex_build/apex"
+    mkdir -p "$HOME/.partsam_apex_build"
+  fi
+  rm -f "$BUILD_DIR/.symlink_test"
+  [ -d "$APEX_BUILD_DIR" ] || git clone --depth 1 https://github.com/ROCm/apex.git "$APEX_BUILD_DIR"
+  (cd "$APEX_BUILD_DIR" && $PIP install -v --disable-pip-version-check --no-cache-dir \
       --no-build-isolation --config-settings "--build-option=--cpp_ext" .)
 fi
 
