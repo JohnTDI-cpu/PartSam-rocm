@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.venv/
+venv/
+*_venv/
+
+# Build artifacts
+build/
+dist/
+*.whl
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local results / large files (keep PNG renders, ignore raw PLY/GLB)
+results/
+*.ply
+*.glb
+*.obj
+
+# ROCm cache
+miopen_db/
+.miopen/
+
+# Logs
+*.log
