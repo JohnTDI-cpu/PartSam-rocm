@@ -19,12 +19,6 @@
 
 The `.ply` output (`results/abrams_trellis.ply`, 22 MB) opens in MeshLab, Blender, Open3D, or drag-and-drop on https://3dviewer.net/. Per-face RGB encodes the part labels — color-isolate any single part with the snippet in [Output format](#output-format) below.
 
-### Bonus: humanoid mech / "space marine"
-
-![space_marine](examples/space_marine_trellis_5view.png)
-
-*Same pipeline — TRELLIS.2 image-to-3D + PartSAM segmentation, both on R9700. 492 784 vertices, 986 542 faces, **~60 s** segmentation. **16 parts** auto-discovered including head, chest plate, shoulder pads, both arms, both legs, hip joint, weapon, base. Humanoid + mechanical mixed-domain — exactly the dataset PartSAM was trained on, hence the cleaner separation than the tank.*
-
 > **All output verifiable on this hardware.** Drop your own `.glb` / `.obj` into `/tmp/PartSAM/data_eval/` and re-run `./run_rocm.sh` to produce the same kind of per-face semantic split for your own meshes.
 
 ---
@@ -178,8 +172,7 @@ PartSam-rocm/
 ├── patches/
 │   └── partsam_patch.py           # apex stubs + manual LayerNorm.forward (ROCm-safe)
 └── examples/
-    ├── abrams_trellis_5view.png        # M1 Abrams (TRELLIS.2 → PartSAM, all on R9700)
-    └── space_marine_trellis_5view.png  # humanoid mech / 16 parts (TRELLIS.2 → PartSAM, all on R9700)
+    └── abrams_trellis_5view.png   # 5-view render of OUR Abrams (TRELLIS.2 → PartSAM, all on R9700)
 ```
 
 ---
