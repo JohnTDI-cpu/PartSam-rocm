@@ -1,0 +1,27 @@
+# PartSAM ROCm — Docker Compose for one-command run.
+# Image is built once and dormant on disk. Bring up only when needed:
+#   docker compose run --rm partsam
+# Tear down implicitly via --rm; nothing auto-mounts on next boot.
+
+services:
+  partsam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: partsam-rocm:local
+    devices:
+      - /dev/kfd
+      - /dev/dri
+    group_add:
+      - video
+    security_opt:
+      - seccomp=unconfined
+    ipc: host
+    shm_size: 8gb
+    volumes:
+      - ./data_eval:/PartSAM/data_eval
+      - ./results:/PartSAM/results
+    environment:
+      BATCH: "${BATCH:-4}"
+      NUM_POINTS: "${NUM_POINTS:-10000}"
+      USE_GRAPH_CUT: "${USE_GRAPH_CUT:-False}"
